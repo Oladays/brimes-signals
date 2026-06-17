@@ -7,7 +7,25 @@ export default async function handler(req, res) {
   try {
     const { subject, plain } = req.body;
 
-    const message = `📊 *BRIMES Trading Signal*\n\n*${subject || 'New Alert'}*\n\n${plain?.trim() || 'Check the chart.'}`;
+    // Format UTC timestamp to WAT (UTC+1)
+    const formatToWAT = (text) => {
+      return text.replace(
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/g,
+        (match) => {
+          const date = new Date(match);
+          const wat = new Date(date.getTime() + 60 * 60 * 1000);
+          const hours = wat.getUTCHours().toString().padStart(2, '0');
+          const minutes = wat.getUTCMinutes().toString().padStart(2, '0');
+          const endHours = (wat.getUTCHours() + 0).toString().padStart(2, '0');
+          const endMinutes = (wat.getUTCMinutes() + 5).toString().padStart(2, '0');
+          return `${hours}:${minutes} – ${endHours}:${endMinutes} WAT`;
+        }
+      );
+    };
+
+    const cleanBody = formatToWAT(plain?.trim() || 'Check the chart.');
+
+    const message = `📊 *BRIMES Trading Signal*\n\n${cleanBody}`;
 
     const tgRes = await fetch(
       `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`,
