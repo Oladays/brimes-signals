@@ -9,19 +9,18 @@ export default async function handler(req, res) {
 
     // Format UTC timestamp to WAT (UTC+1)
     const formatToWAT = (text) => {
-      return text.replace(
-        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/g,
-        (match) => {
-          const date = new Date(match);
-          const wat = new Date(date.getTime() + 60 * 60 * 1000);
-          const hours = wat.getUTCHours().toString().padStart(2, '0');
-          const minutes = wat.getUTCMinutes().toString().padStart(2, '0');
-          const endHours = (wat.getUTCHours() + 0).toString().padStart(2, '0');
-          const endMinutes = (wat.getUTCMinutes() + 5).toString().padStart(2, '0');
-          return `${hours}:${minutes} – ${endHours}:${endMinutes} WAT`;
-        }
-      );
-    };
+  return text.replace(
+    /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/g,
+    (match) => {
+      const date = new Date(match);
+      const wat = new Date(date.getTime() + 60 * 60 * 1000);
+      const end = new Date(wat.getTime() + 5 * 60 * 1000);
+      const fmt = (d) =>
+        `${d.getUTCHours().toString().padStart(2,'0')}:${d.getUTCMinutes().toString().padStart(2,'0')}`;
+      return `${fmt(wat)} – ${fmt(end)} WAT`;
+    }
+  );
+};
 
     const cleanBody = formatToWAT(plain?.trim() || 'Check the chart.');
 
