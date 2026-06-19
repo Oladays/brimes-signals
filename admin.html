@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRIMES Signals - Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0e17;
+    color: #e8eaed;
+    padding: 20px;
+  }
+  .header {
+    font-size: 22px;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .login-card {
+    max-width: 360px;
+    margin: 80px auto;
+    background: #131826;
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .login-card input {
+    width: 100%;
+    background: #0d1320;
+    border: 1px solid #2d3748;
+    border-radius: 8px;
+    padding: 12px;
+    color: #e8eaed;
+    margin-bottom: 12px;
+  }
+  .login-card button {
+    width: 100%;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #adminPanel { display: none; max-width: 720px; margin: 0 auto; }
+  .request-card {
+    background: #131826;
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .request-card .name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+  .request-card .meta { color: #9ca3af; font-size: 13px; margin-bottom: 10px; line-height: 1.5; }
+  .actions { display: flex; gap: 10px; }
+  .btn-approve, .btn-reject {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn-approve { background: #059669; color: white; }
+  .btn-reject { background: #dc2626; color: white; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .badge.pending { background: #92400e; color: #fde68a; }
+  .badge.approved { background: #064e3b; color: #6ee7b7; }
+  .badge.rejected { background: #4c1d1d; color: #fca5a5; }
+  .empty { text-align: center; color: #6b7280; padding: 40px; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-card">
+  <div class="header">🔒 Admin Login</div>
+  <input type="password" id="adminPass" placeholder="Enter admin password">
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="adminPanel">
+  <div class="header">📊 Channel Requests</div>
+  <div id="requestsList"></div>
+</div>
+
+<script>
+const ADMIN_PASSWORD = "brimes2026";
+
+function login() {
+  const input = document.getElementById('adminPass').value;
+  if (input === ADMIN_PASSWORD) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    loadRequests();
+  } else {
+    alert('Wrong password');
+  }
+}
+
+async function loadRequests() {
+  const list = document.getElementById('requestsList');
+  list.innerHTML = '<div class="empty">Loading...</div>';
+
+  try {
+    const res = await fetch('/api/list-channels');
+    const data = await res.json();
+
+    if (!data.channels || data.channels.length === 0) {
+      list.innerHTML = '<div class="empty">No requests yet</div>';
+      return;
+    }
+
+    list.innerHTML = data.channels.map(ch => `
+      <div class="request-card">
+        <div class="name">${ch.channelName} <span class="badge ${ch.status}">${ch.status}</span></div>
+        <div class="meta">
+          Chat ID: ${ch.chatId}<br>
+          Telegram: ${ch.username}<br>
+          Email: ${ch.email}<br>
+          Submitted: ${new Date(ch.submittedAt).toLocaleString()}
+        </div>
+        ${ch.status === 'pending' ? `
+        <div class="actions">
+          <button class="btn-approve" onclick="updateStatus('${ch.key}', 'approved')">Approve</button>
+          <button class="btn-reject" onclick="updateStatus('${ch.key}', 'rejected')">Reject</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+
+  } catch (err) {
+    list.innerHTML = '<div class="empty">Error loading requests</div>';
+  }
+}
+
+async function updateStatus(key, status) {
+  await fetch('/api/update-channel-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, status })
+  });
+  loadRequests();
+}
+</script>
+
+</body>
+</html>
