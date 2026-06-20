@@ -299,7 +299,7 @@
 
   <div class="msg" id="resultMsg"></div>
 
-  <p class="footer-note">Reviewed within 24 hours once payment is confirmed on-chain.</p>
+  <p class="footer-note">Reviewed within 24 hours once payment is confirmed on-chain. If you don't see our confirmation email, check your spam folder.</p>
 
 </div>
 
@@ -359,7 +359,7 @@ form.addEventListener('submit', async (e) => {
 
     if (result.success) {
       msg.classList.add('success');
-      msg.textContent = 'Submitted. You\'ll hear back once payment is verified.';
+      msg.textContent = 'Submitted. If you don\'t see our confirmation email once approved, check your spam folder.';
       form.reset();
     } else {
       throw new Error(result.error || 'Submission failed');
