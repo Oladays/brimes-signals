@@ -130,6 +130,7 @@
     color: #6b7280;
   }
 
+  /* Rejection reason modal */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -276,6 +277,9 @@ async function loadRequests() {
       return;
     }
 
+    let channelDataStore = {};
+    data.channels.forEach(ch => { channelDataStore[ch.key] = ch; });
+
     list.innerHTML = data.channels.map(ch => `
       <div class="request-card" id="card-${ch.key}">
         <div class="name">${ch.channelName} <span class="badge ${ch.status}">${ch.status}</span></div>
@@ -288,12 +292,14 @@ async function loadRequests() {
         </div>
         ${ch.status === 'pending' ? `
         <div class="actions">
-          <button class="btn-approve" id="approve-${ch.key}" onclick='approveChannel("${ch.key}", ${JSON.stringify(ch)})'>Approve</button>
-          <button class="btn-reject" id="reject-${ch.key}" onclick='openRejectModal("${ch.key}", ${JSON.stringify(ch)})'>Reject</button>
+          <button class="btn-approve" id="approve-${ch.key}" onclick="approveChannel('${ch.key}')">Approve</button>
+          <button class="btn-reject" id="reject-${ch.key}" onclick="openRejectModal('${ch.key}')">Reject</button>
         </div>
         <div class="email-status" id="emailstatus-${ch.key}"></div>` : ''}
       </div>
     `).join('');
+
+    window.channelDataStore = channelDataStore;
 
   } catch (err) {
     list.innerHTML = '<div class="empty">Error loading requests</div>';
@@ -302,7 +308,7 @@ async function loadRequests() {
 
 async function sendStatusEmail(channelData, status, reason) {
   try {
-    await fetch('/api/send-status-email', {
+    const res = await fetch('/api/send-status-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -313,14 +319,20 @@ async function sendStatusEmail(channelData, status, reason) {
         reason: reason || ''
       })
     });
+    const result = await res.json();
+    if (!result.success) {
+      alert('Email failed: ' + (result.error || 'Unknown error'));
+      return false;
+    }
     return true;
   } catch (err) {
-    console.error('Failed to send email', err);
+    alert('Email request failed: ' + err.message);
     return false;
   }
 }
 
-async function approveChannel(key, channelData) {
+async function approveChannel(key) {
+  const channelData = window.channelDataStore[key];
   const approveBtn = document.getElementById(`approve-${key}`);
   const rejectBtn = document.getElementById(`reject-${key}`);
   const statusEl = document.getElementById(`emailstatus-${key}`);
@@ -342,9 +354,9 @@ async function approveChannel(key, channelData) {
   loadRequests();
 }
 
-function openRejectModal(key, channelData) {
+function openRejectModal(key) {
   pendingRejectKey = key;
-  pendingRejectData = channelData;
+  pendingRejectData = window.channelDataStore[key];
   document.getElementById('rejectReason').value = '';
   document.getElementById('rejectModal').classList.add('show');
 }
