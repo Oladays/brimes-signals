@@ -20,8 +20,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         service_id: 'service_8ikpr8l',
         template_id: 'template_3yqwopa',
-        user_id: 'L5YpKIMAGEx71tBjx',
-        accessToken: 'w9FacGRJ9ZH-OO_4PiVtG',
+        user_id: '4oqi_eixXSDZqwnqq',
+        accessToken: 'aGkjqnkIx2HmerqJWBUES',
         template_params: {
           to_email: toEmail,
           name: toName || 'there',
