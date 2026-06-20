@@ -3,171 +3,324 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BRIMES Signals - Register Your Channel</title>
+<title>BRIMES Signals — Get Verified Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg: #0a0e14;
+    --panel: #11161f;
+    --panel-border: #1e2733;
+    --signal-green: #00d97e;
+    --alert-red: #ff4757;
+    --gold: #f5b800;
+    --text-primary: #e8edf4;
+    --text-muted: #7c8aa0;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #0a0e17;
-    color: #e8eaed;
-    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 0 20px 60px; }
+
+  /* Header */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--panel-border);
+    margin-bottom: 28px;
+  }
+  .brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+  .brand span { color: var(--signal-green); }
+  /* Hero: the signal ticket itself is the thesis */
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .hero-sub {
+    color: var(--text-muted);
+    font-size: 14.5px;
+    margin-bottom: 24px;
+  }
+
+  /* Section dividers */
+  .section-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--bg);
+    background: var(--gold);
+    width: 22px; height: 22px;
+    border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    font-weight: 600;
+    flex-shrink: 0;
   }
-  .card {
-    background: #131826;
-    border: 1px solid #1f2937;
-    border-radius: 16px;
-    padding: 32px 24px;
-    max-width: 440px;
-    width: 100%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-  }
-  .logo {
-    font-size: 28px;
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
-    color: #3b82f6;
-    margin-bottom: 4px;
-    text-align: center;
+    font-size: 15px;
   }
-  .subtitle {
-    text-align: center;
-    color: #9ca3af;
-    font-size: 14px;
+
+  .info-panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 16px;
     margin-bottom: 28px;
-  }
-  .steps {
-    background: #0d1320;
-    border: 1px solid #1f2937;
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 20px;
-    font-size: 13px;
-    line-height: 1.6;
-    color: #cbd5e1;
-  }
-  .steps strong { color: #3b82f6; }
-  .steps a { color: #60a5fa; text-decoration: none; }
-  .payment-box {
-    background: #0d1320;
-    border: 1px solid #3b82f6;
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 24px;
-    font-size: 13px;
+    font-size: 13.5px;
+    color: var(--text-muted);
     line-height: 1.7;
-    color: #cbd5e1;
   }
-  .payment-box strong { color: #3b82f6; }
-  .payment-box .addr {
-    display: block;
+  .info-panel strong { color: var(--text-primary); }
+  .info-panel a { color: var(--signal-green); text-decoration: none; border-bottom: 1px dotted rgba(0,217,126,0.4); }
+  .step-list { padding-left: 0; margin-top: 8px; }
+  .step-list li { list-style: none; padding-left: 22px; position: relative; margin-bottom: 6px; }
+  .step-list li::before {
+    content: counter(step);
+    counter-increment: step;
+    position: absolute;
+    left: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+  }
+  .step-list { counter-reset: step; }
+
+  .pay-panel {
+    background: var(--panel);
+    border: 1px solid rgba(245,184,0,0.35);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 28px;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .pay-panel strong { color: var(--gold); }
+  .price-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .price-tag span { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+  .addr-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .addr-box {
+    flex: 1;
     word-break: break-all;
-    color: #fbbf24;
-    background: #1a2235;
-    padding: 8px 10px;
+    color: var(--gold);
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    padding: 10px 12px;
     border-radius: 6px;
-    margin: 8px 0;
-    font-family: monospace;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
   }
+  .copy-btn {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: border-color 0.15s ease, color 0.15s ease;
+    padding: 0;
+  }
+  .copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .copy-btn.copied { border-color: var(--signal-green); color: var(--signal-green); }
+  .copy-btn svg { width: 16px; height: 16px; }
+
+  /* Form */
+  form { margin-bottom: 8px; }
   label {
     display: block;
-    font-size: 13px;
-    color: #9ca3af;
+    font-size: 12.5px;
+    color: var(--text-muted);
     margin-bottom: 6px;
-    margin-top: 16px;
+    margin-top: 18px;
+    font-weight: 500;
   }
+  label:first-child { margin-top: 0; }
   input {
     width: 100%;
-    background: #0d1320;
-    border: 1px solid #2d3748;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
     border-radius: 8px;
-    padding: 12px 14px;
-    color: #e8eaed;
+    padding: 13px 14px;
+    color: var(--text-primary);
     font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.15s ease;
   }
-  input:focus { outline: none; border-color: #3b82f6; }
+  input::placeholder { color: #4a5568; }
+  input:focus { outline: none; border-color: var(--signal-green); }
+
   button {
     width: 100%;
-    background: #3b82f6;
-    color: white;
+    background: var(--signal-green);
+    color: #04140c;
     border: none;
     border-radius: 8px;
-    padding: 14px;
+    padding: 15px;
     font-size: 15px;
     font-weight: 600;
-    margin-top: 24px;
+    font-family: 'Inter', sans-serif;
+    margin-top: 26px;
     cursor: pointer;
+    transition: filter 0.15s ease;
   }
-  button:disabled { background: #374151; cursor: not-allowed; }
+  button:hover { filter: brightness(1.08); }
+  button:disabled { background: #2d3748; color: var(--text-muted); cursor: not-allowed; }
+
   .msg {
-    margin-top: 16px;
+    margin-top: 14px;
     padding: 12px 14px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13.5px;
     display: none;
   }
-  .msg.success { background: #064e3b; color: #6ee7b7; display: block; }
-  .msg.error { background: #4c1d1d; color: #fca5a5; display: block; }
+  .msg.success { background: rgba(0,217,126,0.1); color: var(--signal-green); border: 1px solid rgba(0,217,126,0.25); display: block; }
+  .msg.error { background: rgba(255,71,87,0.1); color: var(--alert-red); border: 1px solid rgba(255,71,87,0.25); display: block; }
+
   .footer-note {
     text-align: center;
-    color: #6b7280;
+    color: var(--text-muted);
     font-size: 12px;
-    margin-top: 20px;
+    margin-top: 24px;
   }
 </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="logo">📊 BRIMES Signals</div>
-  <div class="subtitle">Register your channel to receive live signals</div>
+<div class="wrap">
 
-  <div class="steps">
-    <strong>Step 1 — Get your Chat ID:</strong><br>
-    1. Add <strong>@BRIMESSignalsBot</strong> as admin to your Telegram channel<br>
-    2. Send any message in your channel<br>
-    3. Visit this link in your browser:<br>
-    <a href="https://api.telegram.org/bot8632836586:AAHWPn3VnMqF2CXWh7YIz_oce6VYOfISlUk/getUpdates" target="_blank">getUpdates link</a><br>
-    4. Find <code>"chat":{"id":-100...}</code> and copy that number
+  <div class="top-bar">
+    <div class="brand">BRIMES <span>Signals</span></div>
   </div>
 
-  <div class="payment-box">
-    <strong>Step 2 — Send Payment (USDT)</strong><br>
-    Send <strong>10 USDT</strong> via <strong>TRC20 network</strong> to:
-    <span class="addr">TRm6cctL3DSsdB5ggE4Xuzb3SrtmehiFv9</span>
-    After sending, copy your <strong>Transaction ID (TXID)</strong> and paste it in the form below.
+  <div class="hero-label">Channel Access Request</div>
+  <h1>Get every signal the moment it fires.</h1>
+  <p class="hero-sub">Connect your Telegram channel to receive automated entries the moment a signal triggers — no delay, no manual forwarding.</p>
+
+  <div class="section-eyebrow">
+    <div class="section-num">1</div>
+    <div class="section-title">Connect your channel</div>
+  </div>
+  <div class="info-panel">
+    <ul class="step-list">
+      <li>Add <strong>@BRIMESSignalsBot</strong> as admin to your Telegram channel</li>
+      <li>Post any message in the channel</li>
+      <li>Open the <a href="https://api.telegram.org/bot8632836586:AAHWPn3VnMqF2CXWh7YIz_oce6VYOfISlUk/getUpdates" target="_blank">chat lookup link</a> in a new tab</li>
+      <li>Copy the number next to <strong>"chat":{"id":-100...}</strong></li>
+    </ul>
+  </div>
+
+  <div class="section-eyebrow">
+    <div class="section-num">2</div>
+    <div class="section-title">Send payment</div>
+  </div>
+  <div class="pay-panel">
+    <div class="price-tag">$10 <span>/ month · USDT</span></div>
+    <br>
+    Send via <strong>TRC20 network only</strong> to the address below, then paste your transaction ID in the form.
+    <div class="addr-row">
+      <span class="addr-box" id="walletAddr">TRm6cctL3DSsdB5ggE4Xuzb3SrtmehiFv9</span>
+      <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy address">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="section-eyebrow">
+    <div class="section-num">3</div>
+    <div class="section-title">Submit for review</div>
   </div>
 
   <form id="regForm">
-    <label>Channel Name</label>
-    <input type="text" id="channelName" placeholder="e.g. My Trading Signals" required>
+    <label>Channel name</label>
+    <input type="text" id="channelName" placeholder="e.g. Apex Signals Group" required>
 
-    <label>Telegram Chat ID</label>
+    <label>Telegram chat ID</label>
     <input type="text" id="chatId" placeholder="e.g. -1001234567890" required>
 
-    <label>Your Telegram Username</label>
+    <label>Your Telegram username</label>
     <input type="text" id="username" placeholder="e.g. @yourname" required>
 
-    <label>Contact Email</label>
+    <label>Contact email</label>
     <input type="email" id="email" placeholder="you@example.com" required>
 
-    <label>USDT Transaction ID (TXID)</label>
+    <label>USDT transaction ID</label>
     <input type="text" id="txid" placeholder="Paste your transaction hash" required>
 
-    <button type="submit" id="submitBtn">Submit for Approval</button>
+    <button type="submit" id="submitBtn">Submit for approval</button>
   </form>
 
   <div class="msg" id="resultMsg"></div>
 
-  <div class="footer-note">
-    Your channel will be reviewed and approved within 24 hours after payment is verified.
-  </div>
+  <p class="footer-note">Reviewed within 24 hours once payment is confirmed on-chain.</p>
+
 </div>
 
 <script>
+const copyBtn = document.getElementById('copyBtn');
+const walletAddr = document.getElementById('walletAddr');
+
+copyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(walletAddr.textContent.trim());
+    copyBtn.classList.add('copied');
+    copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => {
+      copyBtn.classList.remove('copied');
+      copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    }, 1800);
+  } catch (err) {
+    console.error('Copy failed', err);
+  }
+});
+
 const form = document.getElementById('regForm');
 const btn = document.getElementById('submitBtn');
 const msg = document.getElementById('resultMsg');
@@ -190,9 +343,9 @@ form.addEventListener('submit', async (e) => {
 
   if (!/^-?\d+$/.test(data.chatId)) {
     msg.classList.add('error');
-    msg.textContent = 'Chat ID must be a number (e.g. -1001234567890)';
+    msg.textContent = 'Chat ID must be numeric — e.g. -1001234567890';
     btn.disabled = false;
-    btn.textContent = 'Submit for Approval';
+    btn.textContent = 'Submit for approval';
     return;
   }
 
@@ -206,18 +359,18 @@ form.addEventListener('submit', async (e) => {
 
     if (result.success) {
       msg.classList.add('success');
-      msg.textContent = '✅ Submitted! You will be notified once payment is verified and approved.';
+      msg.textContent = 'Submitted. You\'ll hear back once payment is verified.';
       form.reset();
     } else {
       throw new Error(result.error || 'Submission failed');
     }
   } catch (err) {
     msg.classList.add('error');
-    msg.textContent = '❌ ' + err.message;
+    msg.textContent = err.message;
   }
 
   btn.disabled = false;
-  btn.textContent = 'Submit for Approval';
+  btn.textContent = 'Submit for approval';
 });
 </script>
 
