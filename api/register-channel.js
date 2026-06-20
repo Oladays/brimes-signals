@@ -4,9 +4,9 @@ export default async function handler(req, res) {
   const FIREBASE_URL = process.env.FIREBASE_DB_URL;
 
   try {
-    const { channelName, chatId, username, email, status, submittedAt } = req.body;
+    const { channelName, chatId, username, email, txid, status, submittedAt } = req.body;
 
-    if (!channelName || !chatId || !username || !email) {
+    if (!channelName || !chatId || !username || !email || !txid) {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
     }
 
@@ -21,6 +21,7 @@ export default async function handler(req, res) {
         chatId,
         username,
         email,
+        txid,
         status: 'pending',
         submittedAt: submittedAt || new Date().toISOString()
       })
