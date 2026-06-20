@@ -47,6 +47,38 @@
     cursor: pointer;
   }
   #adminPanel { display: none; max-width: 720px; margin: 0 auto; }
+
+  .settings-card {
+    background: #131826;
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 24px;
+  }
+  .settings-card .title { font-weight: 700; font-size: 15px; margin-bottom: 12px; color: #3b82f6; }
+  .settings-card label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 4px; }
+  .settings-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .settings-row input {
+    flex: 1;
+    background: #0d1320;
+    border: 1px solid #2d3748;
+    border-radius: 8px;
+    padding: 10px;
+    color: #e8eaed;
+    font-size: 14px;
+  }
+  .settings-card button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .saved-note { color: #6ee7b7; font-size: 12px; margin-top: 8px; display: none; }
+
   .request-card {
     background: #131826;
     border: 1px solid #1f2937;
@@ -55,7 +87,18 @@
     margin-bottom: 14px;
   }
   .request-card .name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
-  .request-card .meta { color: #9ca3af; font-size: 13px; margin-bottom: 10px; line-height: 1.5; }
+  .request-card .meta { color: #9ca3af; font-size: 13px; margin-bottom: 10px; line-height: 1.6; }
+  .request-card .meta .txid {
+    color: #fbbf24;
+    word-break: break-all;
+    font-family: monospace;
+    font-size: 12px;
+    background: #0d1320;
+    padding: 4px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 2px;
+  }
   .actions { display: flex; gap: 10px; }
   .btn-approve, .btn-reject {
     flex: 1;
@@ -91,7 +134,23 @@
 </div>
 
 <div id="adminPanel">
-  <div class="header">📊 Channel Requests</div>
+  <div class="header">📊 BRIMES Signals Admin</div>
+
+  <div class="settings-card">
+    <div class="title">💰 Payment Settings</div>
+    <label>Subscription Price (USDT)</label>
+    <div class="settings-row">
+      <input type="number" id="priceInput" placeholder="e.g. 10">
+    </div>
+    <label>USDT Wallet Address (TRC20)</label>
+    <div class="settings-row">
+      <input type="text" id="walletInput" placeholder="TRm6cc...">
+    </div>
+    <button onclick="saveSettings()">Save Settings</button>
+    <div class="saved-note" id="savedNote">✅ Saved successfully</div>
+  </div>
+
+  <div class="header" style="font-size:18px;text-align:left;">Channel Requests</div>
   <div id="requestsList"></div>
 </div>
 
@@ -104,8 +163,40 @@ function login() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     loadRequests();
+    loadSettings();
   } else {
     alert('Wrong password');
+  }
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch('/api/get-settings');
+    const data = await res.json();
+    if (data) {
+      document.getElementById('priceInput').value = data.price || '';
+      document.getElementById('walletInput').value = data.wallet || '';
+    }
+  } catch (err) {
+    console.error('Failed to load settings', err);
+  }
+}
+
+async function saveSettings() {
+  const price = document.getElementById('priceInput').value;
+  const wallet = document.getElementById('walletInput').value;
+
+  try {
+    await fetch('/api/save-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price, wallet })
+    });
+    const note = document.getElementById('savedNote');
+    note.style.display = 'block';
+    setTimeout(() => note.style.display = 'none', 2000);
+  } catch (err) {
+    alert('Failed to save settings');
   }
 }
 
@@ -129,6 +220,7 @@ async function loadRequests() {
           Chat ID: ${ch.chatId}<br>
           Telegram: ${ch.username}<br>
           Email: ${ch.email}<br>
+          ${ch.txid ? `TXID: <span class="txid">${ch.txid}</span><br>` : ''}
           Submitted: ${new Date(ch.submittedAt).toLocaleString()}
         </div>
         ${ch.status === 'pending' ? `
