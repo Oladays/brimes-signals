@@ -21,6 +21,7 @@ export default async function handler(req, res) {
         service_id: 'service_8ikpr8l',
         template_id: 'template_3yqwopa',
         user_id: 'L5YpKIMAGEx71tBjx',
+        accessToken: 'w9FacGRJ9ZH-OO_4PiVtG',
         template_params: {
           to_email: toEmail,
           name: toName || 'there',
