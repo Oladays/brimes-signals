@@ -111,6 +111,7 @@
   }
   .btn-approve { background: #059669; color: white; }
   .btn-reject { background: #dc2626; color: white; }
+  .btn-approve:disabled, .btn-reject:disabled { opacity: 0.5; cursor: not-allowed; }
   .badge {
     display: inline-block;
     padding: 2px 8px;
@@ -123,6 +124,55 @@
   .badge.approved { background: #064e3b; color: #6ee7b7; }
   .badge.rejected { background: #4c1d1d; color: #fca5a5; }
   .empty { text-align: center; color: #6b7280; padding: 40px; }
+  .email-status {
+    font-size: 11px;
+    margin-top: 8px;
+    color: #6b7280;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: #131826;
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+  }
+  .modal-box .title { font-weight: 700; margin-bottom: 12px; }
+  .modal-box textarea {
+    width: 100%;
+    background: #0d1320;
+    border: 1px solid #2d3748;
+    border-radius: 8px;
+    padding: 10px;
+    color: #e8eaed;
+    font-size: 14px;
+    min-height: 80px;
+    margin-bottom: 14px;
+    font-family: inherit;
+  }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .modal-cancel { background: #2d3748; color: #e8eaed; }
+  .modal-confirm { background: #dc2626; color: white; }
 </style>
 </head>
 <body>
@@ -154,8 +204,21 @@
   <div id="requestsList"></div>
 </div>
 
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal-box">
+    <div class="title">Reason for rejection</div>
+    <textarea id="rejectReason" placeholder="e.g. Payment not found on-chain, transaction ID invalid..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeRejectModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmReject()">Reject & Notify</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const ADMIN_PASSWORD = "brimes2026";
+let pendingRejectKey = null;
+let pendingRejectData = null;
 
 function login() {
   const input = document.getElementById('adminPass').value;
@@ -214,7 +277,7 @@ async function loadRequests() {
     }
 
     list.innerHTML = data.channels.map(ch => `
-      <div class="request-card">
+      <div class="request-card" id="card-${ch.key}">
         <div class="name">${ch.channelName} <span class="badge ${ch.status}">${ch.status}</span></div>
         <div class="meta">
           Chat ID: ${ch.chatId}<br>
@@ -225,9 +288,10 @@ async function loadRequests() {
         </div>
         ${ch.status === 'pending' ? `
         <div class="actions">
-          <button class="btn-approve" onclick="updateStatus('${ch.key}', 'approved')">Approve</button>
-          <button class="btn-reject" onclick="updateStatus('${ch.key}', 'rejected')">Reject</button>
-        </div>` : ''}
+          <button class="btn-approve" id="approve-${ch.key}" onclick='approveChannel("${ch.key}", ${JSON.stringify(ch)})'>Approve</button>
+          <button class="btn-reject" id="reject-${ch.key}" onclick='openRejectModal("${ch.key}", ${JSON.stringify(ch)})'>Reject</button>
+        </div>
+        <div class="email-status" id="emailstatus-${ch.key}"></div>` : ''}
       </div>
     `).join('');
 
@@ -236,12 +300,75 @@ async function loadRequests() {
   }
 }
 
-async function updateStatus(key, status) {
+async function sendStatusEmail(channelData, status, reason) {
+  try {
+    await fetch('/api/send-status-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        toEmail: channelData.email,
+        toName: channelData.username,
+        channelName: channelData.channelName,
+        status: status,
+        reason: reason || ''
+      })
+    });
+    return true;
+  } catch (err) {
+    console.error('Failed to send email', err);
+    return false;
+  }
+}
+
+async function approveChannel(key, channelData) {
+  const approveBtn = document.getElementById(`approve-${key}`);
+  const rejectBtn = document.getElementById(`reject-${key}`);
+  const statusEl = document.getElementById(`emailstatus-${key}`);
+
+  approveBtn.disabled = true;
+  rejectBtn.disabled = true;
+  approveBtn.textContent = 'Approving...';
+
   await fetch('/api/update-channel-status', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key, status })
+    body: JSON.stringify({ key, status: 'approved' })
   });
+
+  statusEl.textContent = 'Sending confirmation email...';
+  const emailSent = await sendStatusEmail(channelData, 'approved');
+  statusEl.textContent = emailSent ? '✅ Email sent to ' + channelData.email : '⚠️ Status updated but email failed to send';
+
+  loadRequests();
+}
+
+function openRejectModal(key, channelData) {
+  pendingRejectKey = key;
+  pendingRejectData = channelData;
+  document.getElementById('rejectReason').value = '';
+  document.getElementById('rejectModal').classList.add('show');
+}
+
+function closeRejectModal() {
+  document.getElementById('rejectModal').classList.remove('show');
+  pendingRejectKey = null;
+  pendingRejectData = null;
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('rejectReason').value.trim();
+  const key = pendingRejectKey;
+  const channelData = pendingRejectData;
+
+  closeRejectModal();
+
+  await fetch('/api/update-channel-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, status: 'rejected' })
+  });
+
+  await sendStatusEmail(channelData, 'rejected', reason);
   loadRequests();
 }
 </script>
